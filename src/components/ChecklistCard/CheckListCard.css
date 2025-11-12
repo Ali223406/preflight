@@ -1,0 +1,150 @@
+/* Conteneur principal de la checklist */
+.checklist-container {
+  max-width: 700px;
+  margin: 30px auto;
+  padding: 25px;
+  background-color: #1f2937; /* gris foncé */
+  border-radius: 15px;
+  color: #fff;
+  font-family: 'Arial', sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Titre de la checklist */
+.checklist-container h1 {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+/* Description */
+.checklist-container p {
+  text-align: center;
+  font-size: 1rem;
+  color: #d1d5db;
+  margin-bottom: 15px;
+}
+
+/* Statut global de la checklist */
+.checklist-status {
+  display: block;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #fbbf24; /* jaune */
+  margin-bottom: 20px;
+}
+
+/* Liste des tâches */
+.tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Chaque tâche */
+.Checklistitem {
+  background-color: #374151; /* gris moyen */
+  padding: 12px 15px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background-color 0.2s;
+}
+
+.Checklistitem:hover {
+  background-color: #4b5563;
+}
+
+/* Tâches faites */
+.done-text {
+  text-decoration: line-through;
+  color: #10b981; /* vert */
+}
+
+/* Checkbox et texte */
+.task-view span {
+  margin-left: 10px;
+  flex: 1;
+}
+
+/* Boutons */
+.task-view button,
+.EditForm button {
+  margin-left: 6px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+/* Modifier */
+.EditButton, .SaveButton {
+  background-color: #10b981;
+  color: #fff;
+}
+
+.EditButton:hover, .SaveButton:hover {
+  background-color: #059669;
+}
+
+/* Supprimer / Annuler */
+.DeleteButton, .CancelButton {
+  background-color: #ef4444;
+  color: #fff;
+}
+
+.DeleteButton:hover, .CancelButton:hover {
+  background-color: #b91c1c;
+}
+
+/* Bouton Enregistrer de la checklist */
+.save-btn {
+  display: block;
+  width: 100%;
+  padding: 12px 0;
+  margin-top: 20px;
+  border: none;
+  border-radius: 10px;
+  background-color: #4f46e5; /* violet */
+  color: white;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.save-btn:hover {
+  background-color: #6366f1;
+}
+
+/* Bouton Retour au Dashboard */
+.back-btn {
+  display: inline-block;
+  margin-top: 12px;
+  text-align: center;
+  width: 100%;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #6b7280;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background-color 0.2s;
+}
+
+.back-btn:hover {
+  background-color: #4b5563;
+}
+
+/* Formulaire édition */
+.EditForm input {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  width: 200px;
+}
