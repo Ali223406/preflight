@@ -1,12 +1,18 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { createChecklist, updateChecklist, getChecklistById } from "../../services/api";
+import { useDispatch } from "react-redux";
+import {
+  addChecklistThunk,
+  updateChecklistThunk,
+} from "../../store/checklistsSlice";
+import { getChecklistById } from "../../services/api"; // pour pré-remplir lors de l'édition
 import "./ChecklistForm.css";
 
 function ChecklistForm() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const isEditing = Boolean(id);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -14,8 +20,10 @@ function ChecklistForm() {
     todo: [],
   });
 
+  // Charger la checklist existante si on édite
   useEffect(() => {
     if (!isEditing) return;
+
     const loadChecklist = async () => {
       try {
         const data = await getChecklistById(id);
@@ -25,17 +33,20 @@ function ChecklistForm() {
           todo: data.todo || [],
         });
       } catch (err) {
-        console.error(err);
+        console.error("Erreur lors du chargement de la checklist :", err);
       }
     };
+
     loadChecklist();
   }, [id, isEditing]);
 
+  // Gérer les changements de champs
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Ajouter une tâche
   const addTask = () => {
     setFormData((prev) => ({
       ...prev,
@@ -43,20 +54,32 @@ function ChecklistForm() {
     }));
   };
 
+  // Modifier une tâche existante
   const updateTask = (index, key, value) => {
     const updatedTasks = [...formData.todo];
     updatedTasks[index][key] = value;
     setFormData((prev) => ({ ...prev, todo: updatedTasks }));
   };
 
+  // Supprimer une tâche
+  const deleteTask = (index) => {
+    const updatedTasks = [...formData.todo];
+    updatedTasks.splice(index, 1);
+    setFormData((prev) => ({ ...prev, todo: updatedTasks }));
+  };
+
+  // Soumission du formulaire
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      if (isEditing) await updateChecklist(id, formData);
-      else await createChecklist(formData);
-      navigate("/");
+      if (isEditing) {
+        await dispatch(updateChecklistThunk({ id, ...formData })).unwrap();
+      } else {
+        await dispatch(addChecklistThunk(formData)).unwrap();
+      }
+      navigate("/"); // retourne au Dashboard automatiquement mis à jour
     } catch (err) {
-      console.error(err);
+      console.error("Erreur lors de l'enregistrement :", err);
     }
   };
 
@@ -69,6 +92,7 @@ function ChecklistForm() {
         onChange={handleChange}
         placeholder="Titre de la checklist"
         className="input-field"
+        required
       />
       <textarea
         name="description"
@@ -77,14 +101,15 @@ function ChecklistForm() {
         placeholder="Description"
         className="text-area-field"
       />
-      <h3>Tasks</h3>
+      <h3>Tâches</h3>
       {formData.todo.map((task, i) => (
-        <div key={i}>
+        <div key={i} className="task-item">
           <input
             type="text"
             value={task.title}
             onChange={(e) => updateTask(i, "title", e.target.value)}
             placeholder="Titre tâche"
+            required
           />
           <input
             type="text"
@@ -92,15 +117,23 @@ function ChecklistForm() {
             onChange={(e) => updateTask(i, "description", e.target.value)}
             placeholder="Description tâche"
           />
+          <button
+            type="button"
+            className="delete-task-btn"
+            onClick={() => deleteTask(i)}
+          >
+            Supprimer
+          </button>
         </div>
       ))}
-      <button type="button" onClick={addTask}>
+      <button type="button" onClick={addTask} className="add-task-btn">
         + Ajouter une tâche
       </button>
-      <button type="submit">{isEditing ? "Enregistrer" : "Créer"}</button>
+      <button type="submit" className="submit-btn">
+        {isEditing ? "Enregistrer" : "Créer"}
+      </button>
     </form>
   );
 }
 
 export default ChecklistForm;
-

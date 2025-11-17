@@ -1,44 +1,37 @@
 import { Link, useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import {
+  fetchChecklists,
+  deleteChecklistThunk,
+} from "../../store/checklistsSlice";
+
 import "./Dashboard.css";
-import { useState, useEffect } from "react";
-import { getAllChecklists, deleteChecklist } from "../../services/api";
 
 function Dashboard() {
   const navigate = useNavigate();
-  const [checklists, setChecklists] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const dispatch = useDispatch();
 
-  // Charger toutes les checklists
+  // Récupérer le state Redux
+  const { items: checklists, status, error } = useSelector(
+    (state) => state.checklists
+  );
+
+  // Charger toutes les checklists au montage
   useEffect(() => {
-    const loadChecklists = async () => {
-      try {
-        const data = await getAllChecklists();
-        setChecklists(data.response || []);
-      } catch (err) {
-        console.error(err);
-        setError("Erreur lors du chargement des checklists.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    loadChecklists();
-  }, []);
+    if (status === "idle") {
+      dispatch(fetchChecklists());
+    }
+  }, [status, dispatch]);
 
   // Supprimer une checklist
-  const handleDeleteChecklist = async (id) => {
+  const handleDeleteChecklist = (id) => {
     if (!window.confirm("Supprimer cette checklist ?")) return;
-    try {
-      await deleteChecklist(id);
-      setChecklists((prev) => prev.filter((c) => c.id !== id));
-    } catch (err) {
-      console.error(err);
-      setError("Erreur lors de la suppression de la checklist.");
-    }
+    dispatch(deleteChecklistThunk(id));
   };
 
-  if (loading) return <p>Chargement des checklists...</p>;
-  if (error) return <p className="error-message">{error}</p>;
+  if (status === "loading") return <p>Chargement des checklists...</p>;
+  if (status === "failed") return <p className="error-message">{error}</p>;
 
   return (
     <div className="dashboard-container">
@@ -47,7 +40,7 @@ function Dashboard() {
       {/* Bouton création */}
       <div className="new-btn-container">
         <Link to="/checklist-form" className="new-checklist-btn">
-          + Nouveau
+          + New
         </Link>
       </div>
 
@@ -58,7 +51,7 @@ function Dashboard() {
           {checklists.map((list) => {
             const total = list.todo?.length || 0;
             const done = list.todo?.filter((t) => t.statut === 1).length || 0;
-            const status =
+            const statusLabel =
               total === 0 ? "Vierge" : done === total ? "Terminée" : "En cours";
 
             return (
@@ -72,7 +65,7 @@ function Dashboard() {
                   <h2>{list.title}</h2>
                   {list.description && <p>{list.description}</p>}
                   <small>
-                    {done}/{total} tâches — <b>{status}</b>
+                    {done}/{total} tâches — <b>{statusLabel}</b>
                   </small>
                 </div>
 
