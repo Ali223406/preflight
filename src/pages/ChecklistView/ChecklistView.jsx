@@ -1,63 +1,55 @@
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { getChecklistById, updateChecklist } from "../../services/api";
 import "./ChecklistView.css";
-import { getChecklistById , updateTask} from "../../services/api";
-import { useParams } from "react-router-dom";
-  
+
 function ChecklistView() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [checklist, setChecklist] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+
   useEffect(() => {
     const load = async () => {
-      try {
-        const data = await getChecklistById(id);
-        setChecklist(data);
-      } catch (err) {
-        setError("Erreur lors du chargement de la checklist.");
-      } finally {
-        setLoading(false);
-      }
+      const data = await getChecklistById(id);
+      setChecklist(data);
     };
-
     load();
   }, [id]);
- 
-   const handletoggleTask =async(taskId)=>{
-    try {
-      const updatedChecklist = await updateTask(id, taskId);
-      setChecklist(updatedChecklist);
-    } catch (err) {
-      setError("Erreur lors de la mise à jour de la tâche.");
-    }
-    };
 
+  const toggleTask = async (index) => {
+    const updatedTasks = [...checklist.todo];
+    updatedTasks[index].statut = updatedTasks[index].statut ? 0 : 1;
+    const updatedChecklist = { ...checklist, todo: updatedTasks };
+    await updateChecklist(id, updatedChecklist);
+    setChecklist(updatedChecklist);
+  };
 
-  if (loading) {
-    return <div>Chargement de la checklist...</div>;
-  }
-  if (error) {
-    return <div className="error-message">{error}</div>;
-  }
+  if (!checklist) return <p>Chargement...</p>;
 
+  const total = checklist.todo.length;
+  const done = checklist.todo.filter((t) => t.statut === 1).length;
+  const status = total === 0 ? "Vierge" : done === total ? "Terminée" : "En cours";
 
-  if (!checklist) {
-    return <div className="no-checklist-message">Aucune checklist trouvée.</div>;
-  }
   return (
     <div className="checklist-view-container">
-      <h1 className="checklist-title">{checklist.title}</h1>
-      {checklist.description && <p className="checklist-description">{checklist.description}</p>}
-      <div className="tasks-list">
-        {checklist.tasks.map((task) => (
-          <div key={task.id} className="task-item">
-            <input type="checkbox" checked={task.done} onChange={() => handletoggleTask=(task.id)} className="task-checkbox" />
-            <span className="task-text">{task.text}</span>
-          </div>
+      <h1>{checklist.title}</h1>
+      <p>{checklist.description}</p>
+      <p>Statut: {status} ({done}/{total})</p>
+      <ul>
+        {checklist.todo.map((task, i) => (
+          <li key={i}>
+            <input
+              type="checkbox"
+              checked={task.statut === 1}
+              onChange={() => toggleTask(i)}
+            />
+            {task.title} - {task.description}
+          </li>
         ))}
-      </div>
+      </ul>
+      <button onClick={() => navigate("/")}>Retour au Dashboard</button>
     </div>
   );
 }
-export default ChecklistView;
 
+export default ChecklistView;
