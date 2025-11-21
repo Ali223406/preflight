@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -11,20 +11,17 @@ import "./Dashboard.css";
 function Dashboard() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const location = useLocation();
 
-  // Récupérer le state Redux
   const { items: checklists, status, error } = useSelector(
     (state) => state.checklists
   );
 
-  // Charger toutes les checklists au montage
+  // 🔥 Recharger les checklists à chaque fois qu'on arrive sur cette page
   useEffect(() => {
-    if (status === "idle") {
-      dispatch(fetchChecklists());
-    }
-  }, [status, dispatch]);
+    dispatch(fetchChecklists());
+  }, [location.pathname, dispatch]);
 
-  // Supprimer une checklist
   const handleDeleteChecklist = (id) => {
     if (!window.confirm("Supprimer cette checklist ?")) return;
     dispatch(deleteChecklistThunk(id));
@@ -37,7 +34,6 @@ function Dashboard() {
     <div className="dashboard-container">
       <h1 className="dashboard-title">PREFLIGHT CHECKLIST</h1>
 
-      {/* Bouton création */}
       <div className="new-btn-container">
         <Link to="/checklist-form" className="new-checklist-btn">
           + New
@@ -56,7 +52,6 @@ function Dashboard() {
 
             return (
               <div key={list.id} className="checklist-card">
-                {/* Clic sur la checklist → ChecklistView */}
                 <div
                   className="checklist-info"
                   onClick={() => navigate(`/check/${list.id}`)}
@@ -69,10 +64,9 @@ function Dashboard() {
                   </small>
                 </div>
 
-                {/* Actions */}
                 <div className="checklist-actions">
                   <Link
-                    to={`/checklist-form/${list.id}`} // Éditer → ChecklistForm
+                    to={`/checklist-form/${list.id}`}
                     className="btn edit-btn"
                   >
                     Éditer
@@ -94,3 +88,4 @@ function Dashboard() {
 }
 
 export default Dashboard;
+                                  
